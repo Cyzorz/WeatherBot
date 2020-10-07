@@ -1,0 +1,7 @@
+asyncio
+discord.py
+skimage
+json
+requests
+urllib.request
+io
