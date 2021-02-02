@@ -111,7 +111,7 @@ async def weather(message, *args):
                 i -= 1
                 await embed_response.edit(embed = pages[i])
         try:
-            reaction, user = await client.wait_for('reaction_add', timeout = 30.0, check = check)
+            reaction, user = await client.wait_for('reaction_add', check = check)
             await embed_response.remove_reaction(reaction, user)
         except:
             break
