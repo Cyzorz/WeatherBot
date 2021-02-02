@@ -4,7 +4,7 @@ import colorHandler as color
 # Command Dependencies
 import discord
 from discord.ext import commands
-# Data Dependencies
+# data Dependencies
 import json
 import requests
 # Image dependencies
@@ -40,12 +40,13 @@ async def weather(message, *args):
     request = response['request']
     location = response['location']
 #Get Info via Handler
-    data = {
-        "embeds": [
-            {
-                "title": "Weather",
-                "description": f"Forecast for {request['query']}",
-                "color": color.getAverageColor(current['weather_icons'][0]),
+    embeds = {
+        "title": "Weather",
+        "description": f"Forecast for {request['query']}",
+        "color": color.getAverageColor(current['weather_icons'][0]),
+        "footer": f"Last Updated: {current['observation_time']} ({location['name']})",
+        "thumbnail": f"{current['weather_icons'][0]}",
+        "pageOne": {
                 "fields": [
                     {
                         "name": "Celsius (°C)",
@@ -55,6 +56,10 @@ async def weather(message, *args):
                         "name": "Farenheit (°F)",
                         "value": f"{round((current['temperature'] * 9/5) + 32)}° F"
                     },
+                ]
+            },
+        "pageTwo": {
+                "fields": [
                     {
                         "name": "Humidity",
                         "value": f"{current['humidity']}"
@@ -67,22 +72,51 @@ async def weather(message, *args):
                         "name": "Weather Description",
                         "value": f"{current['weather_descriptions'][0]}"
                     }
-                ],
-                "footer": {"text":f"Last Updated: {current['observation_time']} ({location['name']})"}
-            }
-        ]
+                ]
+        }
     }
 
-# Actual embed text from JSON data
-    embed = discord.Embed(title = data['embeds'][0]['title'], description = data['embeds'][0]['description'], color = data['embeds'][0]['color'])
-    embed.set_thumbnail(url = f"{current['weather_icons'][0]}")
-    embed.add_field(name = data['embeds'][0]['fields'][0]['name'], value = data['embeds'][0]['fields'][0]['value'], inline = True)
-    embed.add_field(name = data['embeds'][0]['fields'][1]['name'], value = data['embeds'][0]['fields'][1]['value'], inline= True)
-    embed.add_field(name = data['embeds'][0]['fields'][2]['name'], value = data['embeds'][0]['fields'][2]['value'], inline= False)
-    embed.add_field(name = data['embeds'][0]['fields'][3]['name'], value = data['embeds'][0]['fields'][3]['value'], inline = True)
-    embed.add_field(name = data['embeds'][0]['fields'][4]['name'], value = data['embeds'][0]['fields'][4]['value'], inline = False)
-    embed.set_footer(text = data['embeds'][0]['footer']['text'])
-    await message.channel.send(embed=embed)
+# Actual embed text from JSON page1
+    pageOne = discord.Embed(title=embeds["title"], color=embeds["color"], description=embeds["description"])
+    for fields in embeds["pageOne"]["fields"]:
+        pageOne.add_field(name=fields["name"], value=fields["value"], inline=False)
+    pageOne.set_thumbnail(url=embeds["thumbnail"])
+    pageOne.set_footer(text=embeds["footer"])
+
+    pageTwo = discord.Embed(title=embeds["title"], color=embeds["color"], description=embeds["description"])
+    for fields in embeds["pageTwo"]["fields"]:
+        pageTwo.add_field(name=fields["name"], value=fields["value"], inline=False)
+    pageTwo.set_thumbnail(url=embeds["thumbnail"])
+    pageTwo.set_footer(text=embeds["footer"])
+
+    embed_response = await message.channel.send(embed=pageOne)
+    await embed_response.add_reaction('◀')
+    await embed_response.add_reaction('▶')
+
+    pages = [pageOne, pageTwo]
+
+    def check(reaction, user):
+        return user == message.author
+
+    i = 0
+    reaction = None
+
+    while True:
+        if str(reaction) == '▶':
+            if i == 0:
+                i += 1
+                await embed_response.edit(embed = pages[i])
+        elif str(reaction) == '◀':
+            if i > 0:
+                i -= 1
+                await embed_response.edit(embed = pages[i])
+        try:
+            reaction, user = await client.wait_for('reaction_add', timeout = 30.0, check = check)
+            await embed_response.remove_reaction(reaction, user)
+        except:
+            break
+
+    await embed_response.clear_reactions()
 
 # Run bot
 client.run(cfg.BOT_TOKEN)
