@@ -38,7 +38,8 @@ async def weather(message, *args):
         "title": "Weather",
         "description": f"Forecast for {request['query']}",
         "color": color.getAverageColor(current['weather_icons'][0]),
-        "footer": f"Last Updated: {current['observation_time']} ({location['name']})",
+        "page_one_footer": f"Last Updated: {current['observation_time']}\n1/2",
+        "page_two_footer": f"Last Updated: {current['observation_time']}\n2/2",
         "thumbnail": f"{current['weather_icons'][0]}",
         "page_one": {
                 "fields": [
@@ -75,13 +76,13 @@ async def weather(message, *args):
     for fields in embeds["page_one"]["fields"]:
         page_one.add_field(name=fields["name"], value=fields["value"], inline=False)
     page_one.set_thumbnail(url=embeds["thumbnail"])
-    page_one.set_footer(text=embeds["footer"])
+    page_one.set_footer(text=embeds["page_one_footer"])
 
     page_two = discord.Embed(title=embeds["title"], color=embeds["color"], description=embeds["description"])
     for fields in embeds["page_two"]["fields"]:
         page_two.add_field(name=fields["name"], value=fields["value"], inline=False)
     page_two.set_thumbnail(url=embeds["thumbnail"])
-    page_two.set_footer(text=embeds["footer"])
+    page_two.set_footer(text=embeds["page_two_footer"])
 
     embed_response = await message.channel.send(embed=page_one)
     await embed_response.add_reaction('◀')
