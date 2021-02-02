@@ -46,7 +46,7 @@ async def weather(message, *args):
         "color": color.getAverageColor(current['weather_icons'][0]),
         "footer": f"Last Updated: {current['observation_time']} ({location['name']})",
         "thumbnail": f"{current['weather_icons'][0]}",
-        "pageOne": {
+        "page_one": {
                 "fields": [
                     {
                         "name": "Celsius (°C)",
@@ -58,7 +58,7 @@ async def weather(message, *args):
                     },
                 ]
             },
-        "pageTwo": {
+        "page_two": {
                 "fields": [
                     {
                         "name": "Humidity",
@@ -77,23 +77,23 @@ async def weather(message, *args):
     }
 
 # Actual embed text from JSON page1
-    pageOne = discord.Embed(title=embeds["title"], color=embeds["color"], description=embeds["description"])
-    for fields in embeds["pageOne"]["fields"]:
-        pageOne.add_field(name=fields["name"], value=fields["value"], inline=False)
-    pageOne.set_thumbnail(url=embeds["thumbnail"])
-    pageOne.set_footer(text=embeds["footer"])
+    page_one = discord.Embed(title=embeds["title"], color=embeds["color"], description=embeds["description"])
+    for fields in embeds["page_one"]["fields"]:
+        page_one.add_field(name=fields["name"], value=fields["value"], inline=False)
+    page_one.set_thumbnail(url=embeds["thumbnail"])
+    page_one.set_footer(text=embeds["footer"])
 
-    pageTwo = discord.Embed(title=embeds["title"], color=embeds["color"], description=embeds["description"])
-    for fields in embeds["pageTwo"]["fields"]:
-        pageTwo.add_field(name=fields["name"], value=fields["value"], inline=False)
-    pageTwo.set_thumbnail(url=embeds["thumbnail"])
-    pageTwo.set_footer(text=embeds["footer"])
+    page_two = discord.Embed(title=embeds["title"], color=embeds["color"], description=embeds["description"])
+    for fields in embeds["page_two"]["fields"]:
+        page_two.add_field(name=fields["name"], value=fields["value"], inline=False)
+    page_two.set_thumbnail(url=embeds["thumbnail"])
+    page_two.set_footer(text=embeds["footer"])
 
-    embed_response = await message.channel.send(embed=pageOne)
+    embed_response = await message.channel.send(embed=page_one)
     await embed_response.add_reaction('◀')
     await embed_response.add_reaction('▶')
 
-    pages = [pageOne, pageTwo]
+    pages = [page_one, page_two]
 
     def check(reaction, user):
         return user == message.author
