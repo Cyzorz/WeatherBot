@@ -4,14 +4,8 @@ import colorHandler as color
 # Command Dependencies
 import discord
 from discord.ext import commands
-# data Dependencies
-import json
+# Data Dependencies
 import requests
-# Image dependencies
-from skimage import io, img_as_float
-import urllib.request
-import io as sysio
-
 
 # Command Prefix
 client = commands.Bot(command_prefix=cfg.COMMAND_PREFIX)
@@ -39,7 +33,7 @@ async def weather(message, *args):
     current = response['current']
     request = response['request']
     location = response['location']
-#Get Info via Handler
+    # Embed data, cannot be put into another file due to circular imports (specifically, using the command arguments in another file)
     embeds = {
         "title": "Weather",
         "description": f"Forecast for {request['query']}",
@@ -76,7 +70,7 @@ async def weather(message, *args):
         }
     }
 
-# Actual embed text from JSON page1
+    # Embed building for pages
     page_one = discord.Embed(title=embeds["title"], color=embeds["color"], description=embeds["description"])
     for fields in embeds["page_one"]["fields"]:
         page_one.add_field(name=fields["name"], value=fields["value"], inline=False)
@@ -93,14 +87,17 @@ async def weather(message, *args):
     await embed_response.add_reaction('◀')
     await embed_response.add_reaction('▶')
 
+    # Add pages to list
     pages = [page_one, page_two]
 
     def check(reaction, user):
         return user == message.author
 
+    # Set initial page to 0 and reactions to none
     i = 0
     reaction = None
 
+    # Loop to check if reactions have been used, i being the page number corresponding to the pages list above
     while True:
         if str(reaction) == '▶':
             if i == 0:
@@ -115,7 +112,6 @@ async def weather(message, *args):
             await embed_response.remove_reaction(reaction, user)
         except:
             break
-
     await embed_response.clear_reactions()
 
 # Run bot
