@@ -27,7 +27,7 @@ async def on_ready():
 async def weather(message, *args):
     # Check for errors
     if len(args) < 1:
-        await message.channel.send(embed = discord.Embed(title="Error ❌", description = "Please enter a location!", color = 0xd63f3f))
+        await message.channel.send(embed = discord.Embed(title="❌ Error", description = "Please enter a location!", color = 0xd63f3f))
         return True
     # Get API request key and query
     params = {
@@ -45,7 +45,7 @@ async def weather(message, *args):
             {
                 "title": "Weather",
                 "description": f"Forecast for {request['query']}",
-                "color": 808080,
+                "color": color.getAverageColor(current['weather_icons'][0]),
                 "fields": [
                     {
                         "name": "Celsius (°C)",
