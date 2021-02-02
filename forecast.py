@@ -14,7 +14,7 @@ import io as sysio
 
 
 # Command Prefix
-client = commands.Bot(command_prefix="c!")
+client = commands.Bot(command_prefix=cfg.COMMAND_PREFIX)
 
 # Initialization
 @client.event
