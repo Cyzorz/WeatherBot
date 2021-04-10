@@ -1,6 +1,6 @@
 asyncio
 discord.py
-skimage
+scikit-image
 json
 requests
 urllib.request

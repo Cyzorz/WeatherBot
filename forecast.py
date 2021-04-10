@@ -7,23 +7,21 @@ from discord.ext import commands
 # Data Dependencies
 import requests
 
-# Command Prefix
 client = commands.Bot(command_prefix=cfg.COMMAND_PREFIX)
 
-# Initialization
 @client.event
 async def on_ready():
     print("Ready!")
     await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"The Forecast!"))
 
-# Weather command
+
+"""General weather command, includes paged response design, a function to grab average color of the image associated with the conditions, and robust command queries"""
 @client.command()
 async def weather(message, *args):
-    # Check for errors
     if len(args) < 1:
         await message.channel.send(embed = discord.Embed(title="❌ Error", description = "Please enter a location!", color = 0xd63f3f))
         return True
-    # Get API request key and query
+
     params = {
         'access_key': 'f94750a0bd28417e135bb2c85b4ae93e',
         'query': " ".join(args)
@@ -33,11 +31,15 @@ async def weather(message, *args):
     current = response['current']
     request = response['request']
     location = response['location']
-    # Embed data, cannot be put into another file due to circular imports (specifically, using the command arguments in another file)
+    try:
+        embedColor = color.getAverageColor(current['weather_icons'][0])
+    except IndexError:
+        embedColor = 0xffffff
+
     embeds = {
         "title": "Weather",
         "description": f"Forecast for {request['query']}",
-        "color": color.getAverageColor(current['weather_icons'][0]),
+        "color": embedColor,
         "page_one_footer": f"Last Updated: {current['observation_time']}\n1/2",
         "page_two_footer": f"Last Updated: {current['observation_time']}\n2/2",
         "thumbnail": f"{current['weather_icons'][0]}",
@@ -71,7 +73,6 @@ async def weather(message, *args):
         }
     }
 
-    # Embed building for pages
     page_one = discord.Embed(title=embeds["title"], color=embeds["color"], description=embeds["description"])
     for fields in embeds["page_one"]["fields"]:
         page_one.add_field(name=fields["name"], value=fields["value"], inline=False)
@@ -88,17 +89,14 @@ async def weather(message, *args):
     await embed_response.add_reaction('◀')
     await embed_response.add_reaction('▶')
 
-    # Add pages to list
     pages = [page_one, page_two]
 
     def check(reaction, user):
         return user == message.author
 
-    # Set initial page to 0 and reactions to none
     i = 0
     reaction = None
 
-    # Loop to check if reactions have been used, i being the page number corresponding to the pages list above
     while True:
         if str(reaction) == '▶':
             if i == 0:
@@ -115,5 +113,4 @@ async def weather(message, *args):
             break
     await embed_response.clear_reactions()
 
-# Run bot
 client.run(cfg.BOT_TOKEN)
